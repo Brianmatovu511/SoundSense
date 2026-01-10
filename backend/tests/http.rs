@@ -31,7 +31,10 @@ async fn ingest_and_query_bundle() {
         ts: chrono::Utc::now(),
     };
 
-    let req = test::TestRequest::post().uri("/ingest").set_json(&reading).to_request();
+    let req = test::TestRequest::post()
+        .uri("/ingest")
+        .set_json(&reading)
+        .to_request();
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
 

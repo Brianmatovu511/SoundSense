@@ -10,7 +10,7 @@ use crate::domain::models::{SensorReading, SignalCode};
 pub fn run_serial_to_ingest(
     port_name: &str,
     baud: u32,
-    ingest_url: &str,   // e.g. "http://127.0.0.1:8080/ingest"
+    ingest_url: &str, // e.g. "http://127.0.0.1:8080/ingest"
     token: Option<&str>,
 ) -> Result<()> {
     let port = serialport::new(port_name, baud)
@@ -54,7 +54,9 @@ pub fn run_serial_to_ingest(
 /// Tiny HTTP POST (no reqwest needed)
 fn http_post_json(url: &str, reading: &SensorReading, token: Option<&str>) -> Result<()> {
     // Parse very simply: http://host:port/path
-    let url = url.strip_prefix("http://").context("Only http:// URLs supported")?;
+    let url = url
+        .strip_prefix("http://")
+        .context("Only http:// URLs supported")?;
     let (host_port, path) = url.split_once('/').unwrap_or((url, ""));
     let path = format!("/{}", path);
 

@@ -36,8 +36,8 @@ async fn main() -> std::io::Result<()> {
     // Where the serial thread should POST readings to.
     // Default is localhost (best for local dev).
     // In Docker you can set: INGEST_URL=http://backend:8080/ingest
-    let ingest_url = std::env::var("INGEST_URL")
-        .unwrap_or_else(|_| format!("http://127.0.0.1:{}/ingest", port));
+    let ingest_url =
+        std::env::var("INGEST_URL").unwrap_or_else(|_| format!("http://127.0.0.1:{}/ingest", port));
 
     // shared state
     let state = web::Data::new(Arc::new(Mutex::new(AppState::new_demo())));
@@ -51,9 +51,12 @@ async fn main() -> std::io::Result<()> {
 
         std::thread::spawn(move || {
             eprintln!("Serial ingest starting on {serial_port} -> {ingest_url}");
-            if let Err(e) =
-                serial_ingest::run_serial_to_ingest(&serial_port, 9600, &ingest_url, token.as_deref())
-            {
+            if let Err(e) = serial_ingest::run_serial_to_ingest(
+                &serial_port,
+                9600,
+                &ingest_url,
+                token.as_deref(),
+            ) {
                 eprintln!("serial ingest error: {e:?}");
             }
         });

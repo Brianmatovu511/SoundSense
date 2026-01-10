@@ -52,7 +52,7 @@ async fn ingest(
     is_authorized(&req)?;
 
     // ✅ Normalize code + validate
-    let  reading = payload.into_inner();
+    let reading = payload.into_inner();
     reading.validate().map_err(AppError::BadRequest)?;
 
     // ✅ Convert to FHIR Observation
