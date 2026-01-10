@@ -1,0 +1,45 @@
+[package]
+name = "soundsense-backend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "soundsense_backend"
+path = "src/lib.rs"
+
+[[bin]]
+name = "soundsense-backend"
+path = "src/bin/soundsense-backend.rs"
+
+[[bin]]
+name = "sound-simulator"
+path = "src/bin/sound-simulator.rs"
+
+[dependencies]
+actix-web = "4"
+actix-web-actors = "4"
+actix = "0.13"
+actix-rt = "2"
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+serialport = "4"
+
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+thiserror = "1"
+anyhow = "1"
+futures-util = "0.3"
+
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"] }
+rand = "0.8"
+
+
+[dev-dependencies]
+actix-web = { version = "4", features = ["macros"] }

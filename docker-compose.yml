@@ -1,0 +1,50 @@
+services:
+  backend:
+    container_name: soundsense-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+      RUST_LOG: ${RUST_LOG:-info}
+    restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/healthz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  frontend:
+    container_name: soundsense-frontend
+    image: nginx:alpine
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 5s
+
+  simulator:
+    container_name: soundsense-simulator
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["/usr/local/bin/sound-simulator"]
+    environment:
+      BASE_URL: http://backend:8080
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 5s

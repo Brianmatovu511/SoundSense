@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SoundSense — Live Sound Dashboard</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#ffffff;
+      --text:#0b1220;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 10px 24px rgba(2, 6, 23, .10);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg, #0b1220 0%, #0b1220 240px, #f6f7fb 240px, #f6f7fb 100%);
+    }
+
+    header{ padding:18px 20px; color:#fff; }
+    .wrap{ max-width: 1100px; margin: 0 auto; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:4px; }
+    .brand h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    .brand p{ margin:0; font-size:12px; color:rgba(255,255,255,.78); }
+
+    .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:var(--warn);
+      box-shadow:0 0 0 4px rgba(245,158,11,.18);
+    }
+    .dot.ok{ background:var(--ok); box-shadow:0 0 0 4px rgba(22,163,74,.18); }
+    .dot.bad{ background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.18); }
+
+    main{ padding: 18px 20px 34px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+
+    .card-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .title{ font-weight:900; font-size:14px; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:12px; margin-top:4px; line-height:1.35; }
+
+    .big{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      margin-top:8px;
+    }
+    .big .value{
+      font-size:54px;
+      font-weight:950;
+      letter-spacing:-1px;
+      line-height:1;
+    }
+    .big .unit{
+      font-size:14px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid var(--border);
+      background:#f8fafc;
+      color:#111827;
+      white-space:nowrap;
+    }
+    .pill.quiet{ background:rgba(22,163,74,.10); border-color:rgba(22,163,74,.25); }
+    .pill.mid{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.28); }
+    .pill.loud{ background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.25); }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 14px;
+      align-items:center;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed var(--border);
+    }
+
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    input[type="checkbox"]{ transform: translateY(1px); }
+
+    input[type="range"]{ width:220px; accent-color:#111827; }
+
+    code{
+      font-family: var(--mono);
+      font-size:12px;
+      background:#f1f5f9;
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid #e2e8f0;
+    }
+
+    pre{
+      margin:0;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#0b1220;
+      color:#e5e7eb;
+      font-size:12px;
+      overflow:auto;
+      max-height:340px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family: var(--mono);
+    }
+
+    .chart-card{ margin-top:16px; }
+    svg{ width:100%; height:320px; display:block; }
+
+    .footer-note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .hint{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      color:#111827;
+      font-weight:800;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .hint b{ font-family:var(--mono); font-weight:900; }
+
+    .kpi-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .kpi{
+      flex:1;
+      min-width:180px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fafafa;
+    }
+    .kpi .k{ font-size:12px; color:var(--muted); font-weight:800; margin-bottom:6px; }
+    .kpi .v{ font-weight:950; font-size:18px; letter-spacing:-.2px; }
+
+    .rowline{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed var(--border);
+    }
+    .rowline .right{
+      margin-left:auto;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .input{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--border);
+    }
+    .input input{
+      border:none;
+      outline:none;
+      font-family:var(--mono);
+      font-size:12px;
+      width:160px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#111827;
+      color:#fff;
+      font-weight:900;
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:12px;
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btn.ghost{
+      background:#fff;
+      color:#111827;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>SoundSense</h1>
+          <p>Real-time sound sensor stream → FHIR Observation → D3 visualization</p>
+        </div>
+
+        <div class="status" title="WebSocket connection status">
+          <span id="dot" class="dot"></span>
+          <span id="statusText">Connecting…</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid">
+        <!-- Current -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="title">Current Sound</div>
+              <div class="sub">Live updates from <code>/ws/live</code></div>
+            </div>
+            <div id="levelPill" class="pill">—</div>
+          </div>
+
+          <div class="big">
+            <div id="current" class="value">—</div>
+            <div class="unit">AU</div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="k">Last 60 samples (min)</div>
+              <div class="v" id="min60">—</div>
+            </div>
+            <div class="kpi">
+              <div class="k">Last 60 samples (max)</div>
+              <div class="v" id="max60">—</div>
+            </div>
+            <div class="kpi">
+              <div class="k">Last 60 samples (avg)</div>
+              <div class="v" id="avg60">—</div>
+            </div>
+          </div>
+
+          <div class="rowline">
+            <div class="controls" style="border-top:none;padding-top:0;margin-top:0;">
+              <label>
+                <input type="checkbox" id="autoZoom" checked />
+                Auto-zoom Y axis
+              </label>
+
+              <label title="Only used when auto-zoom is ON">
+                Zoom padding
+                <input type="range" id="pad" min="2" max="40" value="8" />
+                <span id="padVal" style="min-width:28px; display:inline-block; text-align:right;">8</span>
+              </label>
+
+              <label title="If auto-zoom is OFF, Y axis uses this fixed range centered on latest value">
+                Fixed Y range
+                <input type="range" id="fixedRange" min="30" max="400" value="80" />
+                <span id="fixedVal" style="min-width:40px; display:inline-block; text-align:right;">80</span>
+              </label>
+            </div>
+
+            <div class="right">
+              <div class="input" title="Override backend without editing code (host:port)">
+                backend:
+                <input id="backendInput" type="text" placeholder="localhost:8080" />
+              </div>
+              <button id="applyBackend" class="btn" type="button" title="Reconnect using this backend">Apply</button>
+              <button id="resetBackend" class="btn ghost" type="button" title="Reset to default">Reset</button>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            <span>Tip: values are usually tight (e.g. 180–200). Auto-zoom makes the curve visible.</span>
+            <span class="hint">Open with <b>?backend=localhost:8080</b> if needed</span>
+          </div>
+        </section>
+
+        <!-- Last observation -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="title">Last FHIR Observation</div>
+              <div class="sub">Most recent message received over WebSocket</div>
+            </div>
+          </div>
+          <pre id="last">Waiting for data…</pre>
+        </section>
+      </div>
+
+      <!-- Chart -->
+      <section class="card chart-card">
+        <div class="card-header">
+          <div>
+            <div class="title">Live chart (last 60 samples)</div>
+            <div class="sub">If you don’t have sensor data, run your simulator or post to <code>/ingest</code>.</div>
+          </div>
+        </div>
+        <svg id="chart" aria-label="Sound chart"></svg>
+      </section>
+    </div>
+  </main>
+
+<script>
+  // Backend resolver:
+  // 1) URL param ?backend=host:port
+  // 2) same host as the page + :8080
+  // 3) fallback localhost:8080
+  const DEFAULT_BACKEND = "localhost:8080";
+  const params = new URLSearchParams(location.search);
+  const backendFromQuery = params.get("backend");
+
+  function defaultBackend(){
+    return (backendFromQuery && backendFromQuery.trim())
+      || (location.hostname ? `${location.hostname}:8080` : DEFAULT_BACKEND);
+  }
+
+  function wsUrlFromBackend(hostPort){
+    const scheme = (location.protocol === "https:" ? "wss://" : "ws://");
+    return scheme + hostPort + "/ws/live";
+  }
+
+  const statusText = document.getElementById("statusText");
+  const dot = document.getElementById("dot");
+
+  const currentEl = document.getElementById("current");
+  const lastEl = document.getElementById("last");
+  const levelPill = document.getElementById("levelPill");
+
+  const min60El = document.getElementById("min60");
+  const max60El = document.getElementById("max60");
+  const avg60El = document.getElementById("avg60");
+
+  const autoZoomEl = document.getElementById("autoZoom");
+  const padEl = document.getElementById("pad");
+  const padValEl = document.getElementById("padVal");
+  const fixedRangeEl = document.getElementById("fixedRange");
+  const fixedValEl = document.getElementById("fixedVal");
+
+  const backendInput = document.getElementById("backendInput");
+  const applyBackendBtn = document.getElementById("applyBackend");
+  const resetBackendBtn = document.getElementById("resetBackend");
+
+  padValEl.textContent = padEl.value;
+  fixedValEl.textContent = fixedRangeEl.value;
+
+  padEl.addEventListener("input", () => { padValEl.textContent = padEl.value; render(); });
+  fixedRangeEl.addEventListener("input", () => { fixedValEl.textContent = fixedRangeEl.value; render(); });
+  autoZoomEl.addEventListener("change", render);
+
+  // Data buffer
+  const data = [];
+  const maxN = 60;
+
+  // Thresholds for the label pill (adjust to taste)
+  const QUIET_MAX = 187;
+  const MID_MAX = 190;
+
+  function setStatus(state){
+    if(state === "ok"){
+      statusText.textContent = "Connected ✅";
+      dot.className = "dot ok";
+      return;
+    }
+    if(state === "bad"){
+      statusText.textContent = "Disconnected — retrying…";
+      dot.className = "dot bad";
+      return;
+    }
+    statusText.textContent = "Connecting…";
+    dot.className = "dot";
+  }
+
+  function updateKpis(){
+    if(data.length === 0){
+      min60El.textContent = "—";
+      max60El.textContent = "—";
+      avg60El.textContent = "—";
+      return;
+    }
+    const vals = data.map(d => d.value);
+    const minV = Math.min(...vals);
+    const maxV = Math.max(...vals);
+    const avgV = vals.reduce((a,b)=>a+b,0) / vals.length;
+
+    min60El.textContent = minV.toFixed(0) + " AU";
+    max60El.textContent = maxV.toFixed(0) + " AU";
+    avg60El.textContent = avgV.toFixed(1) + " AU";
+  }
+
+  function updateLevelPill(v){
+    levelPill.className = "pill";
+    if(v < QUIET_MAX){
+      levelPill.textContent = "QUIET";
+      levelPill.classList.add("quiet");
+    } else if(v < MID_MAX){
+      levelPill.textContent = "MEDIUM";
+      levelPill.classList.add("mid");
+    } else {
+      levelPill.textContent = "LOUD";
+      levelPill.classList.add("loud");
+    }
+  }
+
+  // Chart setup
+  const svg = d3.select("#chart");
+  const margin = { top: 18, right: 18, bottom: 34, left: 56 };
+
+  const rootG = svg.append("g");
+  const xAxisG = rootG.append("g");
+  const yAxisG = rootG.append("g");
+  const gridG  = rootG.append("g").attr("opacity", 0.25);
+
+  const linePath = rootG.append("path")
+    .attr("fill", "none")
+    .attr("stroke", "#111827")
+    .attr("stroke-width", 2.25);
+
+  const dotsG = rootG.append("g");
+
+  const tooltip = rootG.append("g").style("display", "none");
+  tooltip.append("circle").attr("r", 5).attr("fill", "#111827");
+  const tipText = tooltip.append("text")
+    .attr("y", -10)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 12)
+    .attr("font-weight", 900)
+    .attr("fill", "#111827");
+
+  function render(){
+    const node = svg.node();
+    const width = node.clientWidth || 900;
+    const height = node.clientHeight || 320;
+
+    const innerW = width - margin.left - margin.right;
+    const innerH = height - margin.top - margin.bottom;
+
+    rootG.attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, Math.max(1, data.length - 1)])
+      .range([0, innerW]);
+
+    let yMin = 0, yMax = 1;
+
+    if(data.length > 0){
+      const vals = data.map(d => d.value);
+      const minV = d3.min(vals);
+      const maxV = d3.max(vals);
+
+      if(autoZoomEl.checked){
+        const pad = Number(padEl.value);
+        yMin = (minV ?? 0) - pad;
+        yMax = (maxV ?? 1) + pad;
+      } else {
+        const last = vals[vals.length - 1] ?? 0;
+        const half = Number(fixedRangeEl.value) / 2;
+        yMin = last - half;
+        yMax = last + half;
+      }
+    }
+
+    if(yMax - yMin < 1){ yMin -= 1; yMax += 1; }
+
+    const y = d3.scaleLinear()
+      .domain([yMin, yMax])
+      .nice()
+      .range([innerH, 0]);
+
+    xAxisG
+      .attr("transform", `translate(0,${innerH})`)
+      .call(d3.axisBottom(x).ticks(6).tickSizeOuter(0));
+
+    yAxisG
+      .call(d3.axisLeft(y).ticks(6).tickSizeOuter(0));
+
+    gridG.selectAll("*").remove();
+    gridG.selectAll("line")
+      .data(y.ticks(6))
+      .enter()
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", innerW)
+      .attr("y1", d => y(d))
+      .attr("y2", d => y(d))
+      .attr("stroke", "#111827");
+
+    const line = d3.line()
+      .x((d,i) => x(i))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    linePath.datum(data).attr("d", line);
+
+    const dots = dotsG.selectAll("circle").data(data, (d,i)=>i);
+    dots.exit().remove();
+    dots.enter()
+      .append("circle")
+      .attr("r", 3)
+      .attr("fill", "#111827")
+      .attr("opacity", 0.75)
+      .merge(dots)
+      .attr("cx", (d,i) => x(i))
+      .attr("cy", d => y(d.value));
+
+    svg.on("mousemove", (event) => {
+      if(data.length === 0) return;
+      const [mx] = d3.pointer(event, rootG.node());
+      const i = Math.round(x.invert(mx));
+      const idx = Math.max(0, Math.min(data.length - 1, i));
+      const d = data[idx];
+
+      tooltip.style("display", null)
+        .attr("transform", `translate(${x(idx)},${y(d.value)})`);
+
+      tipText.text(`${d.value.toFixed(0)} AU`);
+    });
+
+    svg.on("mouseleave", () => tooltip.style("display", "none"));
+  }
+
+  window.addEventListener("resize", render);
+
+  // WebSocket connect / reconnect with overridable backend
+  let ws = null;
+  let activeBackend = defaultBackend();
+  backendInput.value = activeBackend;
+
+  function connect(){
+    setStatus("connecting");
+
+    const WS_URL = wsUrlFromBackend(activeBackend);
+
+    try{
+      if(ws){ ws.close(); ws = null; }
+    }catch(_){}
+
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => setStatus("ok");
+    ws.onclose = () => { setStatus("bad"); setTimeout(connect, 1200); };
+    ws.onerror = () => { setStatus("bad"); };
+
+    ws.onmessage = (ev) => {
+      try{
+        const obs = JSON.parse(ev.data);
+        const v = obs?.valueQuantity?.value;
+
+        if(typeof v === "number"){
+          currentEl.textContent = v.toFixed(0);
+          updateLevelPill(v);
+          lastEl.textContent = JSON.stringify(obs, null, 2);
+
+          data.push({ value: v, ts: Date.now() });
+          if(data.length > maxN) data.shift();
+
+          updateKpis();
+          render();
+        }
+      }catch(_){}
+    };
+  }
+
+  function normalizeBackend(s){
+    const t = (s || "").trim();
+    if(!t) return "";
+    // strip schemes and paths if user pastes full URL
+    return t.replace(/^https?:\/\//, "").replace(/^wss?:\/\//, "").replace(/\/.*$/, "");
+  }
+
+  applyBackendBtn.addEventListener("click", () => {
+    const next = normalizeBackend(backendInput.value);
+    if(!next) return;
+    activeBackend = next;
+    // also update URL param for convenience
+    const u = new URL(location.href);
+    u.searchParams.set("backend", activeBackend);
+    history.replaceState({}, "", u.toString());
+    connect();
+  });
+
+  resetBackendBtn.addEventListener("click", () => {
+    const u = new URL(location.href);
+    u.searchParams.delete("backend");
+    history.replaceState({}, "", u.toString());
+    activeBackend = defaultBackend();
+    backendInput.value = activeBackend;
+    connect();
+  });
+
+  // Start
+  connect();
+  render();
+</script>
+</body>
+</html>
