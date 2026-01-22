@@ -3,7 +3,7 @@
 ############################
 # Build stage
 ############################
-FROM rust:1.83-slim AS build
+FROM rustlang/rust:nightly-slim AS build
 WORKDIR /app
 
 # System deps needed by crates:
@@ -19,9 +19,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy manifests first (better caching)
 COPY Cargo.toml Cargo.lock* ./
 
-# Copy source
+# Copy source and migrations
 COPY src ./src
 COPY tests ./tests
+COPY migrations ./migrations
 
 # Build binaries
 RUN cargo build --release --bin soundsense-backend

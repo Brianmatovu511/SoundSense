@@ -1,6 +1,10 @@
 use actix_web::{middleware, web, App, HttpServer};
-use std::sync::{Arc, Mutex};
+use actix_cors::Cors;
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::sync::Mutex;
 
+use soundsense_backend::db::Database;
 use soundsense_backend::domain::store::AppState;
 use soundsense_backend::{routes, serial_ingest, telemetry::init_tracing};
 
@@ -39,8 +43,43 @@ async fn main() -> std::io::Result<()> {
     let ingest_url =
         std::env::var("INGEST_URL").unwrap_or_else(|_| format!("http://127.0.0.1:{}/ingest", port));
 
-    // shared state
-    let state = web::Data::new(Arc::new(Mutex::new(AppState::new_demo())));
+    // Initialize database connection if DATABASE_URL is provided
+    let state = if let Ok(database_url) = std::env::var("DATABASE_URL") {
+        tracing::info!("Connecting to database...");
+        
+        match sqlx::postgres::PgPoolOptions::new()
+            .max_connections(10)
+            .acquire_timeout(Duration::from_secs(3))
+            .connect(&database_url)
+            .await
+        {
+            Ok(pool) => {
+                tracing::info!("Database connected successfully");
+                
+                // Run migrations
+                match sqlx::migrate!("./migrations").run(&pool).await {
+                    Ok(_) => {
+                        tracing::info!("Database migrations completed successfully");
+                        let db = Database::new(pool);
+                        web::Data::new(Arc::new(Mutex::new(AppState::with_database(db))))
+                    }
+                    Err(e) => {
+                        tracing::error!(error = %e, "Failed to run database migrations");
+                        tracing::warn!("Falling back to in-memory storage");
+                        web::Data::new(Arc::new(Mutex::new(AppState::new_demo())))
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!(error = %e, "Failed to connect to database");
+                tracing::warn!("Falling back to in-memory storage");
+                web::Data::new(Arc::new(Mutex::new(AppState::new_demo())))
+            }
+        }
+    } else {
+        tracing::info!("DATABASE_URL not set, using in-memory storage only");
+        web::Data::new(Arc::new(Mutex::new(AppState::new_demo())))
+    };
 
     tracing::info!(%host, %port, "starting backend");
 
@@ -65,8 +104,15 @@ async fn main() -> std::io::Result<()> {
     }
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
+
         App::new()
             .app_data(state.clone())
+            .wrap(cors)
             .wrap(middleware::Logger::default())
             .configure(routes::configure)
     })

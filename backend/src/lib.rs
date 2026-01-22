@@ -1,6 +1,9 @@
+pub mod auth;
+pub mod db;
 pub mod domain;
 pub mod errors;
 pub mod fhir;
+pub mod ml_client;
 pub mod routes;
 pub mod serial_ingest;
 pub mod telemetry;
