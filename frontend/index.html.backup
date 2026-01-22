@@ -28,7 +28,7 @@
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background:linear-gradient(180deg, #0b1220 0%, #0b1220 280px, #f6f7fb 280px, #f6f7fb 100%);
+      background:linear-gradient(180deg, #0b1220 0%, #0b1220 240px, #f6f7fb 240px, #f6f7fb 100%);
     }
 
     header{ padding:18px 20px; color:#fff; }
@@ -43,36 +43,30 @@
     }
 
     .brand{ display:flex; flex-direction:column; gap:4px; }
-    .brand h1{ margin:0; font-size:20px; letter-spacing:.2px; }
+    .brand h1{ margin:0; font-size:18px; letter-spacing:.2px; }
     .brand p{ margin:0; font-size:12px; color:rgba(255,255,255,.78); }
 
-    .tabs{
+    .tabs {
       display:flex;
       gap:8px;
-      background:rgba(255,255,255,.06);
-      padding:4px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.1);
     }
-    .tab{
+    .tabs button {
       padding:8px 16px;
-      border-radius:8px;
-      font-weight:800;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      font-weight:700;
       font-size:12px;
       cursor:pointer;
-      color:rgba(255,255,255,.7);
-      transition:all .2s;
-      border:none;
-      background:transparent;
+      transition:all 0.2s;
     }
-    .tab:hover{
-      color:rgba(255,255,255,.9);
-      background:rgba(255,255,255,.08);
+    .tabs button:hover {
+      background:rgba(255,255,255,.15);
     }
-    .tab.active{
-      background:#fff;
+    .tabs button.active {
+      background:rgba(255,255,255,.95);
       color:#0b1220;
-      box-shadow:0 2px 8px rgba(0,0,0,.15);
     }
 
     .status{
@@ -96,22 +90,29 @@
     .dot.bad{ background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.18); }
 
     main{ padding: 18px 20px 34px; }
-    .tab-content{ display:none; }
-    .tab-content.active{ display:block; }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: 1.1fr .9fr;
       gap:16px;
       align-items:stretch;
     }
-    .grid-2{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:16px;
-    }
     @media (max-width: 900px){
-      .grid-2{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .stats-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap:12px;
+      margin-top:12px;
     }
 
     .card{
@@ -130,7 +131,7 @@
       margin-bottom:16px;
     }
 
-    .title{ font-weight:900; font-size:15px; letter-spacing:.2px; }
+    .title{ font-weight:900; font-size:16px; letter-spacing:.2px; }
     .sub{ color:var(--muted); font-size:12px; margin-top:4px; line-height:1.35; }
 
     .big{
@@ -149,13 +150,6 @@
       font-size:14px;
       color:var(--muted);
       font-weight:800;
-    }
-
-    .stats-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap:12px;
-      margin-top:12px;
     }
 
     .stat{
@@ -187,12 +181,49 @@
     .pill.loud{ background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.25); color:#dc2626; }
     .pill.concerning{ background:rgba(220,38,38,.15); border-color:rgba(220,38,38,.3); color:#991b1b; }
 
+    .kpi-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .kpi{
+      flex:1;
+      min-width:180px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fafafa;
+    }
+    .kpi .k{ font-size:12px; color:var(--muted); font-weight:800; margin-bottom:6px; }
+    .kpi .v{ font-weight:950; font-size:18px; letter-spacing:-.2px; }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 14px;
+      align-items:center;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed var(--border);
+    }
+
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    input[type="checkbox"]{ transform: translateY(1px); }
+    input[type="range"]{ width:220px; accent-color:#111827; }
+
     .summary-section {
       background:#f8fafc;
       border:1px solid var(--border);
       border-radius:12px;
       padding:16px;
-      margin-top:12px;
+      margin-top:16px;
     }
     .summary-section h3 {
       margin:0 0 12px 0;
@@ -253,11 +284,15 @@
       color:#111827;
     }
     .btn.secondary:hover{ background:#f8fafc; }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
     .loading {
       display:inline-block;
-      width:14px;
-      height:14px;
+      width:16px;
+      height:16px;
       border:2px solid #f3f4f6;
       border-top-color:#111827;
       border-radius:50%;
@@ -284,6 +319,11 @@
       border:1px solid rgba(245,158,11,.25);
       color:#b45309;
     }
+    .alert.error {
+      background:rgba(239,68,68,.10);
+      border:1px solid rgba(239,68,68,.25);
+      color:#dc2626;
+    }
 
     .empty-state {
       text-align:center;
@@ -309,80 +349,17 @@
       color:#e5e7eb;
       font-size:12px;
       overflow:auto;
-      max-height:320px;
+      max-height:340px;
       white-space:pre-wrap;
       word-break:break-word;
       font-family: var(--mono);
     }
 
-    svg{ width:100%; height:300px; display:block; }
-
-    .controls{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      margin-top:12px;
-      padding-top:12px;
-      border-top:1px dashed var(--border);
-    }
-
-    label{
-      font-size:12px;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:700;
-    }
-    input[type="checkbox"]{ transform: translateY(1px); }
-    input[type="range"]{ width:180px; accent-color:#111827; }
-
+    .chart-card{ margin-top:16px; }
+    svg{ width:100%; height:320px; display:block; }
     .mono {
       font-family:var(--mono);
       font-size:12px;
-    }
-
-    .toggle-switch {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      font-weight:700;
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .toggle-switch input[type="checkbox"] {
-      appearance:none;
-      width:44px;
-      height:24px;
-      background:rgba(255,255,255,.2);
-      border-radius:999px;
-      position:relative;
-      cursor:pointer;
-      transition:all .3s;
-      border:1px solid rgba(255,255,255,.3);
-    }
-    .toggle-switch input[type="checkbox"]:checked {
-      background:var(--ok);
-    }
-    .toggle-switch input[type="checkbox"]::before {
-      content:'';
-      position:absolute;
-      width:18px;
-      height:18px;
-      background:#fff;
-      border-radius:50%;
-      top:2px;
-      left:2px;
-      transition:all .3s;
-      box-shadow:0 2px 4px rgba(0,0,0,.2);
-    }
-    .toggle-switch input[type="checkbox"]:checked::before {
-      left:22px;
     }
   </style>
 </head>
@@ -392,22 +369,17 @@
     <div class="wrap">
       <div class="topbar">
         <div class="brand">
-          <h1>🎵 SoundSense</h1>
-          <p>ML-Powered Sound Monitoring with Real-time Analytics & FHIR Integration</p>
+          <h1>SoundSense</h1>
+          <p>ML-Powered Sound Monitoring with FHIR Integration</p>
         </div>
 
         <div class="tabs">
-          <button class="tab active" data-tab="live">📊 Live Stream</button>
-          <button class="tab" data-tab="analysis">🤖 AI Analysis</button>
-          <button class="tab" data-tab="data">📋 Data</button>
+          <button id="tabLive" class="active" onclick="switchTab('live')">📊 Live Stream</button>
+          <button id="tabAI" onclick="switchTab('ai')">🤖 AI Analysis</button>
+          <button id="tabData" onclick="switchTab('data')">📋 Data</button>
         </div>
 
-        <div class="toggle-switch">
-          <span>🎲 Mock Data</span>
-          <input type="checkbox" id="mockToggle" />
-        </div>
-
-        <div class="status">
+        <div class="status" title="WebSocket connection status">
           <span id="dot" class="dot"></span>
           <span id="statusText">Connecting…</span>
         </div>
@@ -418,13 +390,14 @@
   <main>
     <div class="wrap">
       <!-- Live Stream Tab -->
-      <div id="tab-live" class="tab-content active">
-        <div class="grid-2">
+      <div id="contentLive" class="tab-content active">
+        <div class="grid">
+          <!-- Current Sound -->
           <section class="card">
             <div class="card-header">
               <div>
-                <div class="title">🔴 Current Sound Level</div>
-                <div class="sub">Real-time updates from WebSocket stream</div>
+                <div class="title">Current Sound</div>
+                <div class="sub">Live updates from <code>ws://localhost:8080/ws/live</code></div>
               </div>
               <div id="levelPill" class="pill">—</div>
             </div>
@@ -434,50 +407,59 @@
               <div class="unit">AU</div>
             </div>
 
-            <div class="stats-grid">
-              <div class="stat">
-                <div class="label">Min (60s)</div>
-                <div class="value" id="min60">—</div>
+            <div class="kpi-row">
+              <div class="kpi">
+                <div class="k">Last 60 samples (min)</div>
+                <div class="v" id="min60">—</div>
               </div>
-              <div class="stat">
-                <div class="label">Max (60s)</div>
-                <div class="value" id="max60">—</div>
+              <div class="kpi">
+                <div class="k">Last 60 samples (max)</div>
+                <div class="v" id="max60">—</div>
               </div>
-              <div class="stat">
-                <div class="label">Avg (60s)</div>
-                <div class="value" id="avg60">—</div>
+              <div class="kpi">
+                <div class="k">Last 60 samples (avg)</div>
+                <div class="v" id="avg60">—</div>
               </div>
             </div>
 
             <div class="controls">
               <label>
                 <input type="checkbox" id="autoZoom" checked />
-                Auto-zoom
+                Auto-zoom Y axis
               </label>
-              <label>
-                Padding
+
+              <label title="Only used when auto-zoom is ON">
+                Zoom padding
                 <input type="range" id="pad" min="2" max="40" value="8" />
-                <span id="padVal">8</span>
+                <span id="padVal" style="min-width:28px; display:inline-block; text-align:right;">8</span>
+              </label>
+
+              <label title="If auto-zoom is OFF, Y axis uses this fixed range centered on latest value">
+                Fixed Y range
+                <input type="range" id="fixedRange" min="30" max="400" value="80" />
+                <span id="fixedVal" style="min-width:40px; display:inline-block; text-align:right;">80</span>
               </label>
             </div>
           </section>
 
+          <!-- Last FHIR Observation -->
           <section class="card">
             <div class="card-header">
               <div>
-                <div class="title">📄 Last FHIR Observation</div>
-                <div class="sub">Most recent WebSocket message</div>
+                <div class="title">Last FHIR Observation</div>
+                <div class="sub">Most recent message received over WebSocket</div>
               </div>
             </div>
             <pre id="last">Waiting for data…</pre>
           </section>
         </div>
 
-        <section class="card" style="margin-top:16px;">
+        <!-- Live Chart -->
+        <section class="card chart-card">
           <div class="card-header">
             <div>
-              <div class="title">📈 Live Chart (Last 60 Samples)</div>
-              <div class="sub">Real-time visualization with D3.js</div>
+              <div class="title">Live chart (last 60 samples)</div>
+              <div class="sub">D3.js real-time visualization of sound levels</div>
             </div>
           </div>
           <svg id="chart" aria-label="Sound chart"></svg>
@@ -485,7 +467,8 @@
       </div>
 
       <!-- AI Analysis Tab -->
-      <div id="tab-analysis" class="tab-content">
+      <div id="contentAI" class="tab-content">
+        <!-- AI-Generated Summary -->
         <section class="card">
           <div class="card-header">
             <div>
@@ -497,6 +480,7 @@
               Refresh Analysis
             </button>
           </div>
+
           <div id="mlContent">
             <div class="alert info">
               Click "Refresh Analysis" to get ML-powered insights from your sensor data.
@@ -504,7 +488,8 @@
           </div>
         </section>
 
-        <section class="card" style="margin-top:16px;">
+        <!-- Statistics Overview -->
+        <section class="card">
           <div class="card-header">
             <div>
               <div class="title">📊 Database Statistics</div>
@@ -551,7 +536,7 @@
       </div>
 
       <!-- Data Tab -->
-      <div id="tab-data" class="tab-content">
+      <div id="contentData" class="tab-content">
         <section class="card">
           <div class="card-header">
             <div>
@@ -577,28 +562,45 @@
 <script>
   const BACKEND = `http://${location.hostname || 'localhost'}:8080`;
   const ML_SERVICE = `http://${location.hostname || 'localhost'}:8000`;
+  const WS_URL = `ws://${location.hostname || 'localhost'}:8080/ws/live`;
 
   // Tab switching
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const tabName = tab.dataset.tab;
-      
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      tab.classList.add('active');
-      document.getElementById(`tab-${tabName}`).classList.add('active');
+  function switchTab(tab) {
+    // Hide all tabs
+    document.getElementById('contentLive').classList.remove('active');
+    document.getElementById('contentAI').classList.remove('active');
+    document.getElementById('contentData').classList.remove('active');
 
-      // Auto-load data when switching tabs
-      if (tabName === 'analysis' && !window.statsLoaded) {
+    // Deactivate all tab buttons
+    document.getElementById('tabLive').classList.remove('active');
+    document.getElementById('tabAI').classList.remove('active');
+    document.getElementById('tabData').classList.remove('active');
+
+    // Show selected tab
+    if (tab === 'live') {
+      document.getElementById('contentLive').classList.add('active');
+      document.getElementById('tabLive').classList.add('active');
+    } else if (tab === 'ai') {
+      document.getElementById('contentAI').classList.add('active');
+      document.getElementById('tabAI').classList.add('active');
+      // Auto-load data when switching to AI tab
+      if (!aiDataLoaded) {
         loadStats();
-        window.statsLoaded = true;
-      } else if (tabName === 'data' && !window.tableLoaded) {
-        loadTable();
-        window.tableLoaded = true;
+        aiDataLoaded = true;
       }
-    });
-  });
+    } else if (tab === 'data') {
+      document.getElementById('contentData').classList.add('active');
+      document.getElementById('tabData').classList.add('active');
+      // Auto-load data when switching to Data tab
+      if (!dataTableLoaded) {
+        loadTable();
+        dataTableLoaded = true;
+      }
+    }
+  }
+
+  let aiDataLoaded = false;
+  let dataTableLoaded = false;
 
   // JWT Token Management
   let authToken = localStorage.getItem('jwt_token');
@@ -624,11 +626,18 @@
   }
 
   async function fetchWithAuth(url, options = {}) {
-    if (!authToken) await login();
+    if (!authToken) {
+      await login();
+    }
 
-    const headers = { ...options.headers, 'Authorization': `Bearer ${authToken}` };
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${authToken}`
+    };
+
     let response = await fetch(url, { ...options, headers });
 
+    // Retry once if unauthorized
     if (response.status === 401) {
       await login();
       headers.Authorization = `Bearer ${authToken}`;
@@ -638,9 +647,223 @@
     return response;
   }
 
-  // ============================================
-  // LIVE STREAM TAB
-  // ============================================
+  // Load ML Analysis
+  async function loadMLAnalysis() {
+    const btn = document.getElementById('refreshML');
+    const icon = document.getElementById('mlLoadIcon');
+    const content = document.getElementById('mlContent');
+
+    icon.className = 'loading';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(`${ML_SERVICE}/analysis`);
+      
+      if (!response.ok) throw new Error('ML service unavailable');
+
+      const data = await response.json();
+      
+      let html = '';
+
+      // Overall Summary
+      if (data.summary) {
+        html += `<div class="summary-section">
+          <h3>📈 Overall Summary</h3>
+          <p><strong>Total Samples:</strong> ${data.summary.total_samples || 0}</p>
+          <p><strong>Time Range:</strong> ${data.summary.time_range || 'N/A'}</p>
+          <p><strong>Average Level:</strong> ${(data.summary.avg_value || 0).toFixed(1)} AU</p>
+          <p><strong>Standard Deviation:</strong> ${(data.summary.std_value || 0).toFixed(1)} AU</p>
+        </div>`;
+      }
+
+      // Classifications
+      if (data.classifications && data.classifications.length > 0) {
+        html += `<div class="summary-section">
+          <h3>🎯 Sound Classifications</h3>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">`;
+        
+        data.classifications.forEach(cls => {
+          const className = cls.category.toLowerCase().replace(' ', '-');
+          html += `<span class="pill ${className}">
+            ${cls.category}: ${cls.count} (${cls.percentage.toFixed(1)}%)
+          </span>`;
+        });
+        
+        html += `</div></div>`;
+      }
+
+      // Anomalies
+      if (data.anomalies && data.anomalies.detected > 0) {
+        html += `<div class="alert warn">
+          <strong>⚠️ Anomalies Detected:</strong> ${data.anomalies.detected} unusual readings found 
+          (${data.anomalies.percentage.toFixed(1)}% of total)
+        </div>`;
+      }
+
+      // Trends
+      if (data.trends) {
+        html += `<div class="summary-section">
+          <h3>📊 Trends & Patterns</h3>
+          <p>${data.trends.description || 'Stable sound levels detected.'}</p>
+          ${data.trends.recommendation ? `<p><strong>Recommendation:</strong> ${data.trends.recommendation}</p>` : ''}
+        </div>`;
+      }
+
+      // No Data State
+      if (!data.summary || data.summary.total_samples === 0) {
+        html = `<div class="empty-state">
+          <p>No data available for analysis.</p>
+          <p style="font-size:12px; margin-top:8px;">Start collecting sensor readings to see ML insights.</p>
+        </div>`;
+      }
+
+      content.innerHTML = html;
+
+    } catch (error) {
+      content.innerHTML = `<div class="alert error">
+        <strong>Error:</strong> ${error.message}<br>
+        Make sure the ML service is running at <code>${ML_SERVICE}</code>
+      </div>`;
+    } finally {
+      icon.className = '';
+      btn.disabled = false;
+    }
+  }
+
+  // Load Database Statistics
+  async function loadStats() {
+    const btn = document.getElementById('refreshStats');
+    const icon = document.getElementById('statsLoadIcon');
+    const alert = document.getElementById('statsAlert');
+
+    icon.className = 'loading';
+    btn.disabled = true;
+    alert.innerHTML = '';
+
+    try {
+      const response = await fetch(`${ML_SERVICE}/stats`);
+      
+      if (!response.ok) throw new Error('Failed to load statistics');
+
+      const data = await response.json();
+
+      document.getElementById('totalReadings').textContent = data.total_readings || 0;
+      document.getElementById('uniquePatients').textContent = data.unique_patients || 0;
+      document.getElementById('uniqueDevices').textContent = data.unique_devices || 0;
+      document.getElementById('avgValue').textContent = (data.avg_value || 0).toFixed(1);
+      document.getElementById('minValue').textContent = (data.min_value || 0).toFixed(0);
+      document.getElementById('maxValue').textContent = (data.max_value || 0).toFixed(0);
+
+      if (data.total_readings === 0) {
+        alert.innerHTML = `<div class="alert info">
+          No readings in database yet. The simulator should start generating data shortly.
+        </div>`;
+      }
+
+    } catch (error) {
+      alert.innerHTML = `<div class="alert error">
+        <strong>Error:</strong> ${error.message}
+      </div>`;
+    } finally {
+      icon.className = '';
+      btn.disabled = false;
+    }
+  }
+
+  // Load Recent Readings Table
+  async function loadTable() {
+    const btn = document.getElementById('refreshTable');
+    const icon = document.getElementById('tableLoadIcon');
+    const content = document.getElementById('tableContent');
+
+    icon.className = 'loading';
+    btn.disabled = true;
+
+    try {
+      const response = await fetchWithAuth(`${BACKEND}/api/fhir/Observation?limit=20`);
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const bundle = await response.json();
+      const entries = bundle.entry || [];
+
+      if (entries.length === 0) {
+        content.innerHTML = `<div class="empty-state">
+          <p>No observations found.</p>
+          <p style="font-size:12px; margin-top:8px;">Sensor readings will appear here once data is collected.</p>
+        </div>`;
+        return;
+      }
+
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Patient ID</th>
+            <th>Device ID</th>
+            <th>Code</th>
+            <th>Value</th>
+            <th>Classification</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      entries.forEach(entry => {
+        const obs = entry.resource;
+        const time = new Date(obs.effectiveDateTime).toLocaleString();
+        const patientId = obs.subject?.reference?.split('/')[1] || 'N/A';
+        const deviceId = obs.device?.reference?.split('/')[1] || 'N/A';
+        const code = obs.code?.coding?.[0]?.code || 'N/A';
+        const value = obs.valueQuantity?.value || 0;
+        const unit = obs.valueQuantity?.unit || 'AU';
+
+        // Classify value
+        let classification = 'normal';
+        let classText = 'Normal';
+        if (value < 187) {
+          classification = 'quiet';
+          classText = 'Quiet';
+        } else if (value >= 300 && value < 500) {
+          classification = 'moderate';
+          classText = 'Moderate';
+        } else if (value >= 500 && value < 700) {
+          classification = 'loud';
+          classText = 'Loud';
+        } else if (value >= 700) {
+          classification = 'concerning';
+          classText = 'Concerning';
+        }
+
+        html += `<tr>
+          <td class="mono">${time}</td>
+          <td class="mono">${patientId}</td>
+          <td class="mono">${deviceId}</td>
+          <td>${code}</td>
+          <td><strong>${value.toFixed(1)}</strong> ${unit}</td>
+          <td><span class="pill ${classification}">${classText}</span></td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      content.innerHTML = html;
+
+    } catch (error) {
+      content.innerHTML = `<div class="alert error">
+        <strong>Error:</strong> ${error.message}<br>
+        Make sure you're authenticated and the backend is running.
+      </div>`;
+    } finally {
+      icon.className = '';
+      btn.disabled = false;
+    }
+  }
+
+  // Event Listeners for AI/Data tabs
+  document.getElementById('refreshML').addEventListener('click', loadMLAnalysis);
+  document.getElementById('refreshStats').addEventListener('click', loadStats);
+  document.getElementById('refreshTable').addEventListener('click', loadTable);
+
+  // ===== LIVE STREAM TAB - WebSocket & D3.js Chart =====
 
   const statusText = document.getElementById("statusText");
   const dot = document.getElementById("dot");
@@ -653,50 +876,74 @@
   const autoZoomEl = document.getElementById("autoZoom");
   const padEl = document.getElementById("pad");
   const padValEl = document.getElementById("padVal");
+  const fixedRangeEl = document.getElementById("fixedRange");
+  const fixedValEl = document.getElementById("fixedVal");
+
+  padValEl.textContent = padEl.value;
+  fixedValEl.textContent = fixedRangeEl.value;
 
   padEl.addEventListener("input", () => { padValEl.textContent = padEl.value; render(); });
+  fixedRangeEl.addEventListener("input", () => { fixedValEl.textContent = fixedRangeEl.value; render(); });
   autoZoomEl.addEventListener("change", render);
 
+  // Data buffer
   const data = [];
   const maxN = 60;
+
+  // Thresholds for the label pill
+  const QUIET_MAX = 187;
+  const NORMAL_MAX = 300;
+  const MODERATE_MAX = 500;
+  const LOUD_MAX = 700;
 
   function setStatus(state){
     if(state === "ok"){
       statusText.textContent = "Connected ✅";
       dot.className = "dot ok";
-    } else if(state === "bad"){
-      statusText.textContent = "Disconnected";
-      dot.className = "dot bad";
-    } else {
-      statusText.textContent = "Connecting…";
-      dot.className = "dot";
+      return;
     }
+    if(state === "bad"){
+      statusText.textContent = "Disconnected — retrying…";
+      dot.className = "dot bad";
+      return;
+    }
+    statusText.textContent = "Connecting…";
+    dot.className = "dot";
   }
 
   function updateKpis(){
-    if(data.length === 0) return;
+    if(data.length === 0){
+      min60El.textContent = "—";
+      max60El.textContent = "—";
+      avg60El.textContent = "—";
+      return;
+    }
     const vals = data.map(d => d.value);
-    min60El.textContent = Math.min(...vals).toFixed(0);
-    max60El.textContent = Math.max(...vals).toFixed(0);
-    avg60El.textContent = (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1);
+    const minV = Math.min(...vals);
+    const maxV = Math.max(...vals);
+    const avgV = vals.reduce((a,b)=>a+b,0) / vals.length;
+
+    min60El.textContent = minV.toFixed(0) + " AU";
+    max60El.textContent = maxV.toFixed(0) + " AU";
+    avg60El.textContent = avgV.toFixed(1) + " AU";
   }
 
   function updateLevelPill(v){
     levelPill.className = "pill";
-    if(v < 187){
-      levelPill.textContent = "Quiet";
+    if(v < QUIET_MAX){
+      levelPill.textContent = "QUIET";
       levelPill.classList.add("quiet");
-    } else if(v < 300){
-      levelPill.textContent = "Normal";
+    } else if(v < NORMAL_MAX){
+      levelPill.textContent = "NORMAL";
       levelPill.classList.add("normal");
-    } else if(v < 500){
-      levelPill.textContent = "Moderate";
+    } else if(v < MODERATE_MAX){
+      levelPill.textContent = "MODERATE";
       levelPill.classList.add("moderate");
-    } else if(v < 700){
-      levelPill.textContent = "Loud";
+    } else if(v < LOUD_MAX){
+      levelPill.textContent = "LOUD";
       levelPill.classList.add("loud");
     } else {
-      levelPill.textContent = "Concerning";
+      levelPill.textContent = "CONCERNING";
       levelPill.classList.add("concerning");
     }
   }
@@ -709,16 +956,27 @@
   const xAxisG = rootG.append("g");
   const yAxisG = rootG.append("g");
   const gridG  = rootG.append("g").attr("opacity", 0.25);
+
   const linePath = rootG.append("path")
     .attr("fill", "none")
     .attr("stroke", "#111827")
-    .attr("stroke-width", 2.5);
+    .attr("stroke-width", 2.25);
+
   const dotsG = rootG.append("g");
+
+  const tooltip = rootG.append("g").style("display", "none");
+  tooltip.append("circle").attr("r", 5).attr("fill", "#111827");
+  const tipText = tooltip.append("text")
+    .attr("y", -10)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 12)
+    .attr("font-weight", 900)
+    .attr("fill", "#111827");
 
   function render(){
     const node = svg.node();
     const width = node.clientWidth || 900;
-    const height = 300;
+    const height = node.clientHeight || 320;
 
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
@@ -741,151 +999,89 @@
         yMin = (minV ?? 0) - pad;
         yMax = (maxV ?? 1) + pad;
       } else {
-        yMin = 0;
-        yMax = 800;
+        const last = vals[vals.length - 1] ?? 0;
+        const half = Number(fixedRangeEl.value) / 2;
+        yMin = last - half;
+        yMax = last + half;
       }
     }
 
     if(yMax - yMin < 1){ yMin -= 1; yMax += 1; }
 
-    const y = d3.scaleLinear().domain([yMin, yMax]).nice().range([innerH, 0]);
+    const y = d3.scaleLinear()
+      .domain([yMin, yMax])
+      .nice()
+      .range([innerH, 0]);
 
-    xAxisG.attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(6).tickSizeOuter(0));
-    yAxisG.call(d3.axisLeft(y).ticks(6).tickSizeOuter(0));
+    xAxisG
+      .attr("transform", `translate(0,${innerH})`)
+      .call(d3.axisBottom(x).ticks(6).tickSizeOuter(0));
+
+    yAxisG
+      .call(d3.axisLeft(y).ticks(6).tickSizeOuter(0));
 
     gridG.selectAll("*").remove();
-    gridG.selectAll("line").data(y.ticks(6)).enter().append("line")
-      .attr("x1", 0).attr("x2", innerW)
-      .attr("y1", d => y(d)).attr("y2", d => y(d))
+    gridG.selectAll("line")
+      .data(y.ticks(6))
+      .enter()
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", innerW)
+      .attr("y1", d => y(d))
+      .attr("y2", d => y(d))
       .attr("stroke", "#111827");
 
-    const line = d3.line().x((d,i) => x(i)).y(d => y(d.value)).curve(d3.curveMonotoneX);
+    const line = d3.line()
+      .x((d,i) => x(i))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
     linePath.datum(data).attr("d", line);
 
     const dots = dotsG.selectAll("circle").data(data, (d,i)=>i);
     dots.exit().remove();
-    dots.enter().append("circle").attr("r", 3).attr("fill", "#111827").attr("opacity", 0.75)
-      .merge(dots).attr("cx", (d,i) => x(i)).attr("cy", d => y(d.value));
+    dots.enter()
+      .append("circle")
+      .attr("r", 3)
+      .attr("fill", "#111827")
+      .attr("opacity", 0.75)
+      .merge(dots)
+      .attr("cx", (d,i) => x(i))
+      .attr("cy", d => y(d.value));
+
+    svg.on("mousemove", (event) => {
+      if(data.length === 0) return;
+      const [mx] = d3.pointer(event, rootG.node());
+      const i = Math.round(x.invert(mx));
+      const idx = Math.max(0, Math.min(data.length - 1, i));
+      const d = data[idx];
+
+      tooltip.style("display", null)
+        .attr("transform", `translate(${x(idx)},${y(d.value)})`);
+
+      tipText.text(`${d.value.toFixed(0)} AU`);
+    });
+
+    svg.on("mouseleave", () => tooltip.style("display", "none"));
   }
 
   window.addEventListener("resize", render);
 
-  // ============================================
-  // MOCK DATA GENERATOR
-  // ============================================
-
-  let mockInterval = null;
-  let mockEnabled = false;
-  let mockPatternIndex = 0;
-
-  // Realistic sound patterns: quiet hours, normal activity, loud events
-  const mockPatterns = [
-    { min: 50, max: 150, trend: 0.2, noise: 20 },     // Quiet (night/empty)
-    { min: 150, max: 300, trend: 0.5, noise: 40 },   // Normal (ambient)
-    { min: 250, max: 450, trend: 1.0, noise: 60 },   // Active (conversation)
-    { min: 400, max: 650, trend: 1.5, noise: 80 },   // Loud (music/events)
-    { min: 600, max: 850, trend: 2.0, noise: 100 },  // Very loud (alarm/emergency)
-  ];
-
-  function generateMockObservation() {
-    // Cycle through patterns every 15 readings
-    if (Math.random() < 0.05) {
-      mockPatternIndex = (mockPatternIndex + 1) % mockPatterns.length;
-    }
-
-    const pattern = mockPatterns[mockPatternIndex];
-    
-    // Generate value with trend and noise
-    const base = pattern.min + Math.random() * (pattern.max - pattern.min);
-    const trend = Math.sin(Date.now() / 5000) * pattern.trend * 30;
-    const noise = (Math.random() - 0.5) * pattern.noise;
-    const value = Math.max(0, Math.min(1000, base + trend + noise));
-
-    // Create SensorReading matching backend format
-    return {
-      value: Math.round(value * 10) / 10,
-      unit: "AU",
-      code: "SOUND_LEVEL",
-      patient_id: `Patient/mock-patient-${Math.floor(Math.random() * 3) + 1}`,
-      device_id: `Device/mock-sensor-${Math.floor(Math.random() * 2) + 1}`,
-      ts: new Date().toISOString()
-    };
-  }
-
-  function startMockData() {
-    if (mockInterval) return;
-    
-    console.log('🎲 Mock data generator started');
-    setStatus("ok");
-    
-    // Generate data every 1-3 seconds (like real sensor)
-    const generateData = async () => {
-      if (!mockEnabled) return;
-      
-      const obs = generateMockObservation();
-      const v = obs.value;
-      
-      currentEl.textContent = v.toFixed(0);
-      updateLevelPill(v);
-      lastEl.textContent = JSON.stringify(obs, null, 2);
-      
-      data.push({ value: v, ts: Date.now() });
-      if (data.length > maxN) data.shift();
-      
-      updateKpis();
-      render();
-      
-      // Send to backend database (like real sensor does)
-      try {
-        await fetch(`${BACKEND}/ingest`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(obs)
-        });
-      } catch (error) {
-        console.warn('Failed to send mock data to backend:', error.message);
-      }
-      
-      // Random interval between 1-3 seconds
-      const nextInterval = 1000 + Math.random() * 2000;
-      mockInterval = setTimeout(generateData, nextInterval);
-    };
-    
-    generateData();
-  }
-
-  function stopMockData() {
-    if (mockInterval) {
-      clearTimeout(mockInterval);
-      mockInterval = null;
-      console.log('🎲 Mock data generator stopped');
-    }
-  }
-
   // WebSocket connection
   let ws = null;
-  const WS_URL = `ws://${location.hostname || 'localhost'}:8080/ws/live`;
 
   function connect(){
-    if (mockEnabled) {
-      console.log('Mock mode enabled, skipping WebSocket connection');
-      return;
-    }
-    
     setStatus("connecting");
-    try{ if(ws){ ws.close(); ws = null; } }catch(_){}
+
+    try{
+      if(ws){ ws.close(); ws = null; }
+    }catch(_){}
 
     ws = new WebSocket(WS_URL);
+
     ws.onopen = () => setStatus("ok");
-    ws.onclose = () => { 
-      if (!mockEnabled) {
-        setStatus("bad"); 
-        setTimeout(connect, 2000);
-      }
-    };
-    ws.onerror = () => {
-      if (!mockEnabled) setStatus("bad");
-    };
+    ws.onclose = () => { setStatus("bad"); setTimeout(connect, 1200); };
+    ws.onerror = () => { setStatus("bad"); };
 
     ws.onmessage = (ev) => {
       try{
@@ -907,194 +1103,9 @@
     };
   }
 
-  // Mock data toggle
-  const mockToggle = document.getElementById('mockToggle');
-  mockToggle.addEventListener('change', (e) => {
-    mockEnabled = e.target.checked;
-    
-    if (mockEnabled) {
-      // Switch to mock mode
-      if (ws) {
-        ws.close();
-        ws = null;
-      }
-      stopMockData();
-      startMockData();
-    } else {
-      // Switch to real WebSocket mode
-      stopMockData();
-      data.length = 0;
-      currentEl.textContent = '—';
-      lastEl.textContent = 'Waiting for data…';
-      levelPill.textContent = '—';
-      min60El.textContent = '—';
-      max60El.textContent = '—';
-      avg60El.textContent = '—';
-      render();
-      connect();
-    }
-  });
-
+  // Start WebSocket and initial render
   connect();
   render();
-
-  // ============================================
-  // AI ANALYSIS TAB
-  // ============================================
-
-  async function loadMLAnalysis() {
-    const btn = document.getElementById('refreshML');
-    const icon = document.getElementById('mlLoadIcon');
-    const content = document.getElementById('mlContent');
-
-    icon.className = 'loading';
-    btn.disabled = true;
-
-    try {
-      const response = await fetch(`${ML_SERVICE}/analysis`);
-      if (!response.ok) throw new Error('ML service unavailable');
-
-      const data = await response.json();
-      let html = '';
-
-      if (data.summary) {
-        html += `<div class="summary-section">
-          <h3>📈 Overall Summary</h3>
-          <p><strong>Total Samples:</strong> ${data.summary.total_samples || 0}</p>
-          <p><strong>Average Level:</strong> ${(data.summary.avg_value || 0).toFixed(1)} AU</p>
-          <p><strong>Standard Deviation:</strong> ${(data.summary.std_value || 0).toFixed(1)} AU</p>
-        </div>`;
-      }
-
-      if (data.classifications && data.classifications.length > 0) {
-        html += `<div class="summary-section">
-          <h3>🎯 Sound Classifications</h3>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">`;
-        data.classifications.forEach(cls => {
-          const className = cls.category.toLowerCase().replace(' ', '-');
-          html += `<span class="pill ${className}">${cls.category}: ${cls.count} (${cls.percentage.toFixed(1)}%)</span>`;
-        });
-        html += `</div></div>`;
-      }
-
-      if (data.anomalies && data.anomalies.detected > 0) {
-        html += `<div class="alert warn">
-          <strong>⚠️ Anomalies:</strong> ${data.anomalies.detected} unusual readings detected
-        </div>`;
-      }
-
-      if (!data.summary || data.summary.total_samples === 0) {
-        html = `<div class="empty-state"><p>No data available for analysis.</p></div>`;
-      }
-
-      content.innerHTML = html;
-
-    } catch (error) {
-      content.innerHTML = `<div class="alert warn"><strong>Error:</strong> ${error.message}</div>`;
-    } finally {
-      icon.className = '';
-      btn.disabled = false;
-    }
-  }
-
-  async function loadStats() {
-    const btn = document.getElementById('refreshStats');
-    const icon = document.getElementById('statsLoadIcon');
-    const alert = document.getElementById('statsAlert');
-
-    icon.className = 'loading';
-    btn.disabled = true;
-    alert.innerHTML = '';
-
-    try {
-      const response = await fetch(`${ML_SERVICE}/stats`);
-      if (!response.ok) throw new Error('Failed to load statistics');
-
-      const data = await response.json();
-      document.getElementById('totalReadings').textContent = data.total_readings || 0;
-      document.getElementById('uniquePatients').textContent = data.unique_patients || 0;
-      document.getElementById('uniqueDevices').textContent = data.unique_devices || 0;
-      document.getElementById('avgValue').textContent = (data.avg_value || 0).toFixed(1);
-      document.getElementById('minValue').textContent = (data.min_value || 0).toFixed(0);
-      document.getElementById('maxValue').textContent = (data.max_value || 0).toFixed(0);
-
-    } catch (error) {
-      alert.innerHTML = `<div class="alert warn"><strong>Error:</strong> ${error.message}</div>`;
-    } finally {
-      icon.className = '';
-      btn.disabled = false;
-    }
-  }
-
-  // ============================================
-  // DATA TAB
-  // ============================================
-
-  async function loadTable() {
-    const btn = document.getElementById('refreshTable');
-    const icon = document.getElementById('tableLoadIcon');
-    const content = document.getElementById('tableContent');
-
-    icon.className = 'loading';
-    btn.disabled = true;
-
-    try {
-      const response = await fetchWithAuth(`${BACKEND}/api/fhir/Observation?limit=20`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const bundle = await response.json();
-      const entries = bundle.entry || [];
-
-      if (entries.length === 0) {
-        content.innerHTML = `<div class="empty-state"><p>No observations found.</p></div>`;
-        return;
-      }
-
-      let html = `<table><thead><tr>
-        <th>Timestamp</th>
-        <th>Patient ID</th>
-        <th>Device ID</th>
-        <th>Value</th>
-        <th>Classification</th>
-      </tr></thead><tbody>`;
-
-      entries.forEach(entry => {
-        const obs = entry.resource;
-        const time = new Date(obs.effectiveDateTime).toLocaleString();
-        const patientId = obs.subject?.reference?.split('/')[1] || 'N/A';
-        const deviceId = obs.device?.reference?.split('/')[1] || 'N/A';
-        const value = obs.valueQuantity?.value || 0;
-        const unit = obs.valueQuantity?.unit || 'AU';
-
-        let classification = 'normal', classText = 'Normal';
-        if (value < 187) { classification = 'quiet'; classText = 'Quiet'; }
-        else if (value >= 300 && value < 500) { classification = 'moderate'; classText = 'Moderate'; }
-        else if (value >= 500 && value < 700) { classification = 'loud'; classText = 'Loud'; }
-        else if (value >= 700) { classification = 'concerning'; classText = 'Concerning'; }
-
-        html += `<tr>
-          <td class="mono">${time}</td>
-          <td class="mono">${patientId}</td>
-          <td class="mono">${deviceId}</td>
-          <td><strong>${value.toFixed(1)}</strong> ${unit}</td>
-          <td><span class="pill ${classification}">${classText}</span></td>
-        </tr>`;
-      });
-
-      html += `</tbody></table>`;
-      content.innerHTML = html;
-
-    } catch (error) {
-      content.innerHTML = `<div class="alert warn"><strong>Error:</strong> ${error.message}</div>`;
-    } finally {
-      icon.className = '';
-      btn.disabled = false;
-    }
-  }
-
-  document.getElementById('refreshML').addEventListener('click', loadMLAnalysis);
-  document.getElementById('refreshStats').addEventListener('click', loadStats);
-  document.getElementById('refreshTable').addEventListener('click', loadTable);
 </script>
 </body>
 </html>

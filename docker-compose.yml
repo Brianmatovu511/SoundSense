@@ -1,4 +1,28 @@
 services:
+  # PostgreSQL Database
+  postgres:
+    container_name: soundsense-postgres
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: soundsense
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-soundsense_dev_password}
+      POSTGRES_DB: soundsense
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soundsense"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - soundsense-network
+
+  # Backend Service (Rust)
   backend:
     container_name: soundsense-backend
     build:
@@ -9,8 +33,13 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8080
+      DATABASE_URL: postgres://soundsense:${POSTGRES_PASSWORD:-soundsense_dev_password}@postgres:5432/soundsense
+      ML_SERVICE_URL: http://ml-service:8000
       INGEST_TOKEN: ${INGEST_TOKEN:-}
       RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 10s
     healthcheck:
@@ -18,8 +47,39 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
-      start_period: 10s
+      start_period: 15s
+    networks:
+      - soundsense-network
 
+  # ML Service (Python/FastAPI)
+  ml-service:
+    container_name: soundsense-ml
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://soundsense:${POSTGRES_PASSWORD:-soundsense_dev_password}@postgres:5432/soundsense
+      MODEL_DIR: /app/models
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ml_models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - soundsense-network
+
+  # Frontend Service
   frontend:
     container_name: soundsense-frontend
     image: nginx:alpine
@@ -30,9 +90,14 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      ml-service:
+        condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 5s
+    networks:
+      - soundsense-network
 
+  # Simulator Service
   simulator:
     container_name: soundsense-simulator
     build:
@@ -48,3 +113,15 @@ services:
         condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 5s
+    networks:
+      - soundsense-network
+
+volumes:
+  postgres_data:
+    driver: local
+  ml_models:
+    driver: local
+
+networks:
+  soundsense-network:
+    driver: bridge
