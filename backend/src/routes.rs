@@ -3,6 +3,7 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
 
+use crate::audit::{AuditAction, AuditLogEntry};
 use crate::auth::{get_claims_from_request, jwt_validator, Claims, JwtManager};
 use crate::domain::models::SensorReading;
 use crate::domain::store::AppState;
@@ -209,11 +210,14 @@ async fn ingest_public(
 
     // Convert to FHIR Observation
     let obs = FhirObservation::from_reading(reading.clone());
+    
+    // Validate FHIR schema compliance
+    obs.validate().map_err(AppError::BadRequest)?;
 
     // Store reading (now with database support)
     {
         let mut st = state.lock().await;
-        st.push(reading).await?;
+        st.push(reading, None).await?;
     }
 
     // Push to WebSocket subscribers
@@ -241,11 +245,14 @@ async fn ingest(
 
     // Convert to FHIR Observation
     let obs = FhirObservation::from_reading(reading.clone());
+    
+    // Validate FHIR schema compliance
+    obs.validate().map_err(AppError::BadRequest)?;
 
-    // Store reading (now with database support)
+    // Store reading (now with database support and audit logging)
     {
         let mut st = state.lock().await;
-        st.push(reading).await?;
+        st.push(reading.clone(), Some(&claims)).await?;
     }
 
     // Push to WebSocket subscribers

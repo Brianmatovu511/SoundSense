@@ -17,6 +17,11 @@ impl Database {
         Self { pool }
     }
 
+    /// Get a reference to the connection pool (for audit logging)
+    pub fn pool(&self) -> &PgPool {
+        &self.pool
+    }
+
     /// Insert a sensor reading into the database
     pub async fn insert_reading(&self, reading: &SensorReading) -> Result<Uuid, AppError> {
         tracing::debug!(

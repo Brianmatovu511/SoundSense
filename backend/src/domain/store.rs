@@ -1,3 +1,5 @@
+use crate::audit::{AuditAction, AuditLogEntry};
+use crate::auth::Claims;
 use crate::db::Database;
 use crate::domain::models::SensorReading;
 use crate::errors::AppError;
@@ -29,12 +31,30 @@ impl AppState {
     }
 
     /// Push a sensor reading to both database (if available) and in-memory storage
-    pub async fn push(&mut self, r: SensorReading) -> Result<(), AppError> {
+    /// Logs audit trail if user claims provided
+    pub async fn push(&mut self, r: SensorReading, claims: Option<&Claims>) -> Result<(), AppError> {
         // Store in database if available
         if let Some(db) = &self.db {
             match db.insert_reading(&r).await {
                 Ok(id) => {
                     tracing::debug!(id = %id, "Stored reading in database");
+                    
+                    // Log audit event for HIPAA compliance
+                    if let Some(user_claims) = claims {
+                        let audit_entry = AuditLogEntry::new(
+                            AuditAction::Create,
+                            "SensorReading".to_string(),
+                        )
+                        .with_user(user_claims.sub.clone(), user_claims.role.clone())
+                        .with_resource_id(id.to_string())
+                        .with_patient_id(r.patient_id.clone())
+                        .with_status_code(200);
+
+                        if let Err(e) = audit_entry.log(db.pool()).await {
+                            tracing::warn!(error = ?e, "Failed to log audit event");
+                            // Don't fail the request if audit logging fails
+                        }
+                    }
                 }
                 Err(e) => {
                     tracing::error!(error = ?e, "Failed to store reading in database, continuing with in-memory only");
