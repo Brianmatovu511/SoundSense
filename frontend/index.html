@@ -955,42 +955,65 @@
       if (!response.ok) throw new Error('ML service unavailable');
 
       const data = await response.json();
+      
+      // Check if we have analysis data
+      if (!data.success || !data.analysis || data.analysis.total_readings === 0) {
+        content.innerHTML = `<div class="empty-state"><p>No data available for analysis. Please ensure sensor readings are being collected.</p></div>`;
+        return;
+      }
+      
+      const analysis = data.analysis;
       let html = '';
 
-      if (data.summary) {
+      // Overall Summary
+      html += `<div class="summary-section">
+        <h3>📈 Overall Summary</h3>
+        <p><strong>Total Samples:</strong> ${analysis.total_readings || 0}</p>
+        <p><strong>Average Level:</strong> ${(analysis.avg_level || 0).toFixed(1)} AU</p>
+        <p><strong>Standard Deviation:</strong> ${(analysis.std_level || 0).toFixed(1)} AU</p>
+        <p><strong>Range:</strong> ${(analysis.min_level || 0).toFixed(1)} - ${(analysis.max_level || 0).toFixed(1)} AU</p>
+      </div>`;
+
+      // Time-based patterns
+      if (analysis.peak_hour !== undefined) {
         html += `<div class="summary-section">
-          <h3>📈 Overall Summary</h3>
-          <p><strong>Total Samples:</strong> ${data.summary.total_samples || 0}</p>
-          <p><strong>Average Level:</strong> ${(data.summary.avg_value || 0).toFixed(1)} AU</p>
-          <p><strong>Standard Deviation:</strong> ${(data.summary.std_value || 0).toFixed(1)} AU</p>
+          <h3>⏰ Time Patterns</h3>
+          <p><strong>Peak Activity Hour:</strong> ${analysis.peak_hour}:00</p>
+          <p><strong>Quietest Hour:</strong> ${analysis.quietest_hour}:00</p>
         </div>`;
       }
 
-      if (data.classifications && data.classifications.length > 0) {
+      // Sound Classifications
+      if (analysis.category_distribution) {
         html += `<div class="summary-section">
           <h3>🎯 Sound Classifications</h3>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">`;
-        data.classifications.forEach(cls => {
-          const className = cls.category.toLowerCase().replace(' ', '-');
-          html += `<span class="pill ${className}">${cls.category}: ${cls.count} (${cls.percentage.toFixed(1)}%)</span>`;
-        });
+        
+        const total = analysis.total_readings;
+        for (const [category, count] of Object.entries(analysis.category_distribution)) {
+          const percentage = ((count / total) * 100).toFixed(1);
+          const className = category.toLowerCase().replace(' ', '-');
+          html += `<span class="pill ${className}">${category}: ${count} (${percentage}%)</span>`;
+        }
         html += `</div></div>`;
       }
 
-      if (data.anomalies && data.anomalies.detected > 0) {
+      // Anomalies
+      if (analysis.anomaly_count !== undefined && analysis.anomaly_count > 0) {
         html += `<div class="alert warn">
-          <strong>⚠️ Anomalies:</strong> ${data.anomalies.detected} unusual readings detected
+          <strong>⚠️ Anomalies Detected:</strong> ${analysis.anomaly_count} unusual readings (${analysis.anomaly_percentage.toFixed(1)}% of total)
         </div>`;
-      }
-
-      if (!data.summary || data.summary.total_samples === 0) {
-        html = `<div class="empty-state"><p>No data available for analysis.</p></div>`;
+      } else if (analysis.anomaly_count === 0) {
+        html += `<div class="alert info">
+          <strong>✓ No Anomalies:</strong> All readings appear normal
+        </div>`;
       }
 
       content.innerHTML = html;
 
     } catch (error) {
-      content.innerHTML = `<div class="alert warn"><strong>Error:</strong> ${error.message}</div>`;
+      console.error('ML Analysis error:', error);
+      content.innerHTML = `<div class="alert warn"><strong>Error:</strong> ${error.message}. Make sure the ML service is running and database has data.</div>`;
     } finally {
       icon.className = '';
       btn.disabled = false;
