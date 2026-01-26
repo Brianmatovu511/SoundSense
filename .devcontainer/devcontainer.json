@@ -1,0 +1,41 @@
+{
+  "name": "SoundSense DevContainer",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/workspaces/SoundSense",
+  
+  "forwardPorts": [5173, 8080, 8000, 5432],
+  
+  "portsAttributes": {
+    "5173": {
+      "label": "Frontend",
+      "visibility": "public",
+      "protocol": "https"
+    },
+    "8080": {
+      "label": "Backend API",
+      "visibility": "public",
+      "protocol": "https"
+    },
+    "8000": {
+      "label": "ML Service",
+      "visibility": "public",
+      "protocol": "https"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "visibility": "private"
+    }
+  },
+  
+  "postCreateCommand": "echo 'DevContainer ready!'",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "ms-python.python"
+      ]
+    }
+  }
+}
