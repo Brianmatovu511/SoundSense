@@ -788,7 +788,7 @@ SoundSense/
 
 ## 👥 Team
 
-**Brian Doctor Matovu** & **Aamna Muhammad**
+**Brian Doctor Matovu**, **Aamna Muhammad** & **Samuel Safari Onyango**
 
 **Course:** Media Management / Innovation & Complexity (INCO)
 
