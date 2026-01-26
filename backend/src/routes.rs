@@ -3,7 +3,6 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
 
-use crate::audit::{AuditAction, AuditLogEntry};
 use crate::auth::{get_claims_from_request, jwt_validator, Claims, JwtManager};
 use crate::domain::models::SensorReading;
 use crate::domain::store::AppState;

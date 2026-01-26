@@ -113,7 +113,12 @@ impl AuditLogEntry {
 
     /// Log this audit entry to the database
     pub async fn log(&self, pool: &PgPool) -> Result<Uuid, sqlx::Error> {
-        let id = sqlx::query_scalar!(
+        // Convert IP address to string for storage (PostgreSQL INET type)
+        let ip_str = self.ip_address.as_ref()
+            .and_then(|ip| ip.parse::<std::net::IpAddr>().ok())
+            .map(|addr| addr.to_string());
+
+        let id: Uuid = sqlx::query_scalar(
             r#"
             INSERT INTO audit_logs (
                 user_id,
@@ -128,22 +133,22 @@ impl AuditLogEntry {
                 status_code,
                 error_message,
                 metadata
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7::inet, $8, $9, $10, $11, $12)
             RETURNING id
-            "#,
-            self.user_id,
-            self.user_role,
-            self.action.to_string(),
-            self.resource_type,
-            self.resource_id,
-            self.patient_id,
-            self.ip_address.as_ref().and_then(|ip| ip.parse::<std::net::IpAddr>().ok()),
-            self.user_agent,
-            self.request_path,
-            self.status_code,
-            self.error_message,
-            self.metadata
+            "#
         )
+        .bind(&self.user_id)
+        .bind(&self.user_role)
+        .bind(self.action.to_string())
+        .bind(&self.resource_type)
+        .bind(&self.resource_id)
+        .bind(&self.patient_id)
+        .bind(ip_str)
+        .bind(&self.user_agent)
+        .bind(&self.request_path)
+        .bind(self.status_code)
+        .bind(&self.error_message)
+        .bind(&self.metadata)
         .fetch_one(pool)
         .await?;
 
@@ -181,8 +186,7 @@ impl AuditLogger {
         patient_id: &str,
         limit: i64,
     ) -> Result<Vec<AuditLogSummary>, sqlx::Error> {
-        let logs = sqlx::query_as!(
-            AuditLogSummary,
+        let logs = sqlx::query_as::<_, AuditLogSummary>(
             r#"
             SELECT 
                 id,
@@ -201,10 +205,10 @@ impl AuditLogger {
             WHERE patient_id = $1
             ORDER BY timestamp DESC
             LIMIT $2
-            "#,
-            patient_id,
-            limit
+            "#
         )
+        .bind(patient_id)
+        .bind(limit)
         .fetch_all(&self.pool)
         .await?;
 
@@ -217,8 +221,7 @@ impl AuditLogger {
         user_id: &str,
         limit: i64,
     ) -> Result<Vec<AuditLogSummary>, sqlx::Error> {
-        let logs = sqlx::query_as!(
-            AuditLogSummary,
+        let logs = sqlx::query_as::<_, AuditLogSummary>(
             r#"
             SELECT 
                 id,
@@ -237,10 +240,10 @@ impl AuditLogger {
             WHERE user_id = $1
             ORDER BY timestamp DESC
             LIMIT $2
-            "#,
-            user_id,
-            limit
+            "#
         )
+        .bind(user_id)
+        .bind(limit)
         .fetch_all(&self.pool)
         .await?;
 
@@ -248,7 +251,7 @@ impl AuditLogger {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct AuditLogSummary {
     pub id: Uuid,
     pub timestamp: chrono::DateTime<Utc>,

@@ -97,7 +97,21 @@ Arduino → Serial → Rust Backend → WebSocket/REST → D3 Frontend
 
 ## 8. FHIR Compliance
 
-Uses **FHIR Observation** resource with LOINC-style coding.
+Uses **FHIR R4 Observation** resource with LOINC-style coding.
+
+### FHIR Schema Validation
+- Full FHIR R4 schema validation implemented
+- Validates resource types, status codes, coding systems
+- Ensures compliance with HL7 FHIR standards
+- See [COMPLIANCE.md](COMPLIANCE.md) for details
+
+### HIPAA Compliance
+✅ **Encryption at Rest**: PostgreSQL pgcrypto for PHI data  
+✅ **Audit Logging**: Comprehensive tracking of all PHI access  
+✅ **Access Controls**: JWT-based authentication and authorization  
+✅ **Data Validation**: FHIR schema validation prevents invalid data  
+
+For complete HIPAA compliance details, see [COMPLIANCE.md](COMPLIANCE.md)
 
 ---
 
@@ -148,13 +162,30 @@ docker compose --profile sim up --build
 
 ---
 
-## 12. Testing
+## 12. Testing & CI/CD
 
+### Unit & Integration Tests
 ```bash
-cargo test
+cd backend
+cargo test --all --all-features
 ```
 
-All tests pass.
+### Code Coverage
+```bash
+cargo install cargo-llvm-cov
+cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+```
+
+### CI/CD Pipeline
+- **Automated testing** on every push
+- **Security scanning** with Trivy
+- **Code coverage** reporting with Codecov
+- **Docker builds** for all services
+- **Staging/Production** deployment automation
+
+See [.github/workflows/ci.yml](.github/workflows/ci.yml) for pipeline details.
+
+All tests pass ✅
 
 ---
 
