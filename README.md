@@ -792,6 +792,13 @@ SoundSense/
 
 **Course:** Media Management / Innovation & Complexity (INCO)
 
+| **Contributor**         | **Role**                                | **Responsibilities**                                                                 |
+|-------------------------|-----------------------------------------|-------------------------------------------------------------------------------------|
+| **Aamna Muhammad**       | **Hardware & Backend Integration**      | Aamna was responsible for selecting and setting up the Arduino-based sound sensors, ensuring they were connected properly to the backend for data ingestion and real-time monitoring. |
+| **Brian Doctor Matovu**  | **Backend Developer**                   | Brian developed the backend service using Rust, handling real-time data ingestion, processing, and FHIR R4 compliance for the project. |
+| **Samuel Safari Onyango**| **Frontend Developer**                  | Samuel worked on the frontend development using D3.js and JavaScript to create real-time visualizations, ensuring smooth data display and user interactivity. |
+
+
 ---
 
 ## 📚 Additional Resources
