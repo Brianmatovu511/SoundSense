@@ -1,7 +1,6 @@
 /// JWT Authentication Module
-/// 
+///
 /// Handles JWT token creation, validation, and user authentication.
-
 use actix_web::{dev::ServiceRequest, Error, HttpMessage};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use chrono::{Duration, Utc};
@@ -11,20 +10,25 @@ use serde::{Deserialize, Serialize};
 /// JWT Claims structure
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: String,        // Subject (user ID or identifier)
-    pub exp: i64,           // Expiration time (Unix timestamp)
-    pub iat: i64,           // Issued at (Unix timestamp)
-    pub role: String,       // User role (admin, user, device, etc.)
+    pub sub: String,  // Subject (user ID or identifier)
+    pub exp: i64,     // Expiration time (Unix timestamp)
+    pub iat: i64,     // Issued at (Unix timestamp)
+    pub role: String, // User role (admin, user, device, etc.)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub device_id: Option<String>, // For device authentication
 }
 
 impl Claims {
     /// Create new claims for a user
-    pub fn new(sub: String, role: String, device_id: Option<String>, expires_in_hours: i64) -> Self {
+    pub fn new(
+        sub: String,
+        role: String,
+        device_id: Option<String>,
+        expires_in_hours: i64,
+    ) -> Self {
         let now = Utc::now();
         let exp = (now + Duration::hours(expires_in_hours)).timestamp();
-        
+
         Self {
             sub,
             exp,
@@ -54,7 +58,7 @@ impl JwtManager {
     /// Generate JWT token
     pub fn generate_token(&self, claims: Claims) -> Result<String, String> {
         let encoding_key = EncodingKey::from_secret(self.secret.as_bytes());
-        
+
         encode(&Header::default(), &claims, &encoding_key)
             .map_err(|e| format!("Failed to generate token: {}", e))
     }
@@ -86,24 +90,25 @@ pub async fn jwt_validator(
 ) -> Result<ServiceRequest, (Error, ServiceRequest)> {
     let secret = std::env::var("JWT_SECRET")
         .unwrap_or_else(|_| "default_secret_change_in_production".to_string());
-    
+
     let jwt_manager = JwtManager::new(secret);
-    
+
     match jwt_manager.validate_token(credentials.token()) {
         Ok(claims) => {
             // Check if token is expired
             if claims.is_expired() {
                 tracing::warn!("Expired token attempt for user: {}", claims.sub);
-                return Err((
-                    actix_web::error::ErrorUnauthorized("Token expired"),
-                    req,
-                ));
+                return Err((actix_web::error::ErrorUnauthorized("Token expired"), req));
             }
 
             // Attach claims to request extensions for later use
             req.extensions_mut().insert(claims.clone());
-            
-            tracing::debug!("Authenticated request from user: {}, role: {}", claims.sub, claims.role);
+
+            tracing::debug!(
+                "Authenticated request from user: {}, role: {}",
+                claims.sub,
+                claims.role
+            );
             Ok(req)
         }
         Err(e) => {
@@ -130,12 +135,7 @@ mod tests {
     #[test]
     fn test_jwt_generation_and_validation() {
         let manager = JwtManager::new("test_secret".to_string());
-        let claims = Claims::new(
-            "test_user".to_string(),
-            "user".to_string(),
-            None,
-            24,
-        );
+        let claims = Claims::new("test_user".to_string(), "user".to_string(), None, 24);
 
         let token = manager.generate_token(claims.clone()).unwrap();
         let validated_claims = manager.validate_token(&token).unwrap();
@@ -146,12 +146,7 @@ mod tests {
 
     #[test]
     fn test_token_expiration_check() {
-        let claims = Claims::new(
-            "test_user".to_string(),
-            "user".to_string(),
-            None,
-            24,
-        );
+        let claims = Claims::new("test_user".to_string(), "user".to_string(), None, 24);
 
         assert!(!claims.is_expired());
     }
@@ -172,19 +167,9 @@ mod tests {
 
     #[test]
     fn test_role_checking() {
-        let user_claims = Claims::new(
-            "user1".to_string(),
-            "user".to_string(),
-            None,
-            24,
-        );
+        let user_claims = Claims::new("user1".to_string(), "user".to_string(), None, 24);
 
-        let admin_claims = Claims::new(
-            "admin1".to_string(),
-            "admin".to_string(),
-            None,
-            24,
-        );
+        let admin_claims = Claims::new("admin1".to_string(), "admin".to_string(), None, 24);
 
         assert!(has_role(&user_claims, "user"));
         assert!(!has_role(&user_claims, "admin"));

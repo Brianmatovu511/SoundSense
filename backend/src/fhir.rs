@@ -85,9 +85,22 @@ impl FhirObservation {
         Uuid::parse_str(&self.id).map_err(|_| "ID must be a valid UUID")?;
 
         // Status must be one of: registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown
-        let valid_statuses = ["registered", "preliminary", "final", "amended", "corrected", "cancelled", "entered-in-error", "unknown"];
+        let valid_statuses = [
+            "registered",
+            "preliminary",
+            "final",
+            "amended",
+            "corrected",
+            "cancelled",
+            "entered-in-error",
+            "unknown",
+        ];
         if !valid_statuses.contains(&self.status) {
-            return Err(format!("Invalid status '{}'. Must be one of: {}", self.status, valid_statuses.join(", ")));
+            return Err(format!(
+                "Invalid status '{}'. Must be one of: {}",
+                self.status,
+                valid_statuses.join(", ")
+            ));
         }
 
         // Code must have at least one coding
@@ -101,7 +114,10 @@ impl FhirObservation {
                 return Err("Coding system is required".into());
             }
             if !coding.system.starts_with("http://") && !coding.system.starts_with("https://") {
-                return Err(format!("Coding system must be a valid URI: {}", coding.system));
+                return Err(format!(
+                    "Coding system must be a valid URI: {}",
+                    coding.system
+                ));
             }
             if coding.code.is_empty() {
                 return Err("Coding code is required".into());
@@ -166,19 +182,39 @@ impl FhirBundle {
         }
 
         // Type must be one of: document, message, transaction, transaction-response, batch, batch-response, history, searchset, collection
-        let valid_types = ["document", "message", "transaction", "transaction-response", "batch", "batch-response", "history", "searchset", "collection"];
+        let valid_types = [
+            "document",
+            "message",
+            "transaction",
+            "transaction-response",
+            "batch",
+            "batch-response",
+            "history",
+            "searchset",
+            "collection",
+        ];
         if !valid_types.contains(&self.r#type) {
-            return Err(format!("Invalid Bundle type '{}'. Must be one of: {}", self.r#type, valid_types.join(", ")));
+            return Err(format!(
+                "Invalid Bundle type '{}'. Must be one of: {}",
+                self.r#type,
+                valid_types.join(", ")
+            ));
         }
 
         // Total must match entry count
         if self.total != self.entry.len() {
-            return Err(format!("Bundle total ({}) does not match entry count ({})", self.total, self.entry.len()));
+            return Err(format!(
+                "Bundle total ({}) does not match entry count ({})",
+                self.total,
+                self.entry.len()
+            ));
         }
 
         // Validate all observations in the bundle
         for (idx, entry) in self.entry.iter().enumerate() {
-            entry.resource.validate()
+            entry
+                .resource
+                .validate()
                 .map_err(|e| format!("Observation at index {} is invalid: {}", idx, e))?;
         }
 

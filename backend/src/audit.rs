@@ -1,8 +1,7 @@
 /// HIPAA Compliance Audit Logging Module
-/// 
+///
 /// Tracks all access to Protected Health Information (PHI) and system actions
 /// for compliance with HIPAA Security Rule audit requirements.
-
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -114,7 +113,9 @@ impl AuditLogEntry {
     /// Log this audit entry to the database
     pub async fn log(&self, pool: &PgPool) -> Result<Uuid, sqlx::Error> {
         // Convert IP address to string for storage (PostgreSQL INET type)
-        let ip_str = self.ip_address.as_ref()
+        let ip_str = self
+            .ip_address
+            .as_ref()
             .and_then(|ip| ip.parse::<std::net::IpAddr>().ok())
             .map(|addr| addr.to_string());
 
@@ -135,7 +136,7 @@ impl AuditLogEntry {
                 metadata
             ) VALUES ($1, $2, $3, $4, $5, $6, $7::inet, $8, $9, $10, $11, $12)
             RETURNING id
-            "#
+            "#,
         )
         .bind(&self.user_id)
         .bind(&self.user_role)
@@ -205,7 +206,7 @@ impl AuditLogger {
             WHERE patient_id = $1
             ORDER BY timestamp DESC
             LIMIT $2
-            "#
+            "#,
         )
         .bind(patient_id)
         .bind(limit)
@@ -240,7 +241,7 @@ impl AuditLogger {
             WHERE user_id = $1
             ORDER BY timestamp DESC
             LIMIT $2
-            "#
+            "#,
         )
         .bind(user_id)
         .bind(limit)

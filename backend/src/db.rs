@@ -129,7 +129,10 @@ impl Database {
             })
             .collect();
 
-        tracing::debug!(count = readings.len(), "Successfully fetched sensor readings");
+        tracing::debug!(
+            count = readings.len(),
+            "Successfully fetched sensor readings"
+        );
         Ok(readings)
     }
 

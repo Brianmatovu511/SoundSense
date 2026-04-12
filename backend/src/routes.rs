@@ -31,8 +31,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         .route("/healthz", web::get().to(healthz))
         .route("/auth/login", web::post().to(login))
         .route("/auth/token", web::post().to(generate_device_token))
-        .route("/ws/live", web::get().to(ws_live))  // WebSocket endpoint (public for browser compatibility)
-        .route("/ingest", web::post().to(ingest_public))   // Public ingest for simulator/mock data
+        .route("/ws/live", web::get().to(ws_live)) // WebSocket endpoint (public for browser compatibility)
+        .route("/ingest", web::post().to(ingest_public)) // Public ingest for simulator/mock data
         // Protected endpoints (JWT required)
         .service(
             web::scope("/api")
@@ -120,10 +120,10 @@ async fn login(body: web::Json<LoginRequest>) -> Result<HttpResponse, AppError> 
     // Generate JWT token
     let jwt_secret = std::env::var("JWT_SECRET")
         .unwrap_or_else(|_| "default_secret_change_in_production".to_string());
-    
+
     let jwt_manager = JwtManager::new(jwt_secret);
     let expires_in_hours = 24;
-    
+
     let claims = Claims::new(
         body.username.clone(),
         "admin".to_string(),
@@ -153,23 +153,28 @@ struct DeviceTokenRequest {
     secret: String, // Admin secret to generate device tokens
 }
 
-async fn generate_device_token(body: web::Json<DeviceTokenRequest>) -> Result<HttpResponse, AppError> {
+async fn generate_device_token(
+    body: web::Json<DeviceTokenRequest>,
+) -> Result<HttpResponse, AppError> {
     // Verify admin secret
-    let admin_secret = std::env::var("DEVICE_TOKEN_SECRET")
-        .unwrap_or_else(|_| "change_this_secret".to_string());
+    let admin_secret =
+        std::env::var("DEVICE_TOKEN_SECRET").unwrap_or_else(|_| "change_this_secret".to_string());
 
     if body.secret != admin_secret {
-        tracing::warn!("Invalid device token generation attempt for device: {}", body.device_id);
+        tracing::warn!(
+            "Invalid device token generation attempt for device: {}",
+            body.device_id
+        );
         return Err(AppError::Unauthorized);
     }
 
     // Generate JWT token for device
     let jwt_secret = std::env::var("JWT_SECRET")
         .unwrap_or_else(|_| "default_secret_change_in_production".to_string());
-    
+
     let jwt_manager = JwtManager::new(jwt_secret);
     let expires_in_hours = 8760; // 1 year for devices
-    
+
     let claims = Claims::new(
         format!("device_{}", body.device_id),
         "device".to_string(),
@@ -209,7 +214,7 @@ async fn ingest_public(
 
     // Convert to FHIR Observation
     let obs = FhirObservation::from_reading(reading.clone());
-    
+
     // Validate FHIR schema compliance
     obs.validate().map_err(AppError::BadRequest)?;
 
@@ -233,10 +238,13 @@ async fn ingest(
     payload: web::Json<SensorReading>,
 ) -> Result<HttpResponse, AppError> {
     // Get authenticated user from JWT claims
-    let claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
-    tracing::debug!("Ingest request from user: {}, role: {}", claims.sub, claims.role);
+    tracing::debug!(
+        "Ingest request from user: {}, role: {}",
+        claims.sub,
+        claims.role
+    );
 
     // Validate
     let reading = payload.into_inner();
@@ -244,7 +252,7 @@ async fn ingest(
 
     // Convert to FHIR Observation
     let obs = FhirObservation::from_reading(reading.clone());
-    
+
     // Validate FHIR schema compliance
     obs.validate().map_err(AppError::BadRequest)?;
 
@@ -272,8 +280,7 @@ async fn get_observations(
     q: web::Query<ObsQuery>,
 ) -> Result<HttpResponse, AppError> {
     // Verify authentication
-    let _claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let _claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
     let limit = q.limit.unwrap_or(100).min(500);
 
@@ -302,12 +309,10 @@ async fn ml_predict(
     query: web::Query<MlQuery>,
 ) -> Result<HttpResponse, AppError> {
     // Verify authentication
-    let _claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let _claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
-    let client = ml_client.ok_or_else(|| {
-        AppError::BadRequest("ML service not configured".to_string())
-    })?;
+    let client =
+        ml_client.ok_or_else(|| AppError::BadRequest("ML service not configured".to_string()))?;
 
     let limit = query.limit.unwrap_or(100).min(1000);
     let hours_back = query.hours_back;
@@ -327,12 +332,10 @@ async fn ml_analysis(
     query: web::Query<MlQuery>,
 ) -> Result<HttpResponse, AppError> {
     // Verify authentication
-    let _claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let _claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
-    let client = ml_client.ok_or_else(|| {
-        AppError::BadRequest("ML service not configured".to_string())
-    })?;
+    let client =
+        ml_client.ok_or_else(|| AppError::BadRequest("ML service not configured".to_string()))?;
 
     let limit = query.limit.unwrap_or(1000).min(10000);
     let hours_back = query.hours_back;
@@ -357,17 +360,15 @@ async fn ml_train(
     body: web::Json<TrainRequest>,
 ) -> Result<HttpResponse, AppError> {
     // Verify authentication and require admin role
-    let claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
     if claims.role != "admin" {
         tracing::warn!("Non-admin user {} attempted to train models", claims.sub);
         return Err(AppError::Unauthorized);
     }
 
-    let client = ml_client.ok_or_else(|| {
-        AppError::BadRequest("ML service not configured".to_string())
-    })?;
+    let client =
+        ml_client.ok_or_else(|| AppError::BadRequest("ML service not configured".to_string()))?;
 
     let min_samples = body.min_samples.unwrap_or(100);
 
@@ -388,12 +389,10 @@ async fn ml_health(
     ml_client: Option<web::Data<Arc<MlClient>>>,
 ) -> Result<HttpResponse, AppError> {
     // Verify authentication
-    let _claims = get_claims_from_request(&req)
-        .ok_or_else(|| AppError::Unauthorized)?;
+    let _claims = get_claims_from_request(&req).ok_or_else(|| AppError::Unauthorized)?;
 
-    let client = ml_client.ok_or_else(|| {
-        AppError::BadRequest("ML service not configured".to_string())
-    })?;
+    let client =
+        ml_client.ok_or_else(|| AppError::BadRequest("ML service not configured".to_string()))?;
 
     match client.health_check().await {
         Ok(health) => Ok(HttpResponse::Ok().json(health)),

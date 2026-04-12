@@ -1,7 +1,6 @@
 /// ML Service Client
-/// 
+///
 /// Communicates with Python ML service for predictions and analysis.
-
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -98,7 +97,7 @@ impl MlClient {
         hours_back: Option<u32>,
     ) -> Result<PredictionResponse, String> {
         let url = format!("{}/predict", self.base_url);
-        
+
         let request_body = PredictionRequest { limit, hours_back };
 
         let response = self
@@ -126,7 +125,7 @@ impl MlClient {
         hours_back: Option<u32>,
     ) -> Result<AnalysisResponse, String> {
         let mut url = format!("{}/analysis?limit={}", self.base_url, limit);
-        
+
         if let Some(hours) = hours_back {
             url.push_str(&format!("&hours_back={}", hours));
         }
@@ -151,7 +150,7 @@ impl MlClient {
     /// Trigger model training
     pub async fn train_models(&self, min_samples: usize) -> Result<String, String> {
         let url = format!("{}/train", self.base_url);
-        
+
         let request_body = serde_json::json!({
             "min_samples": min_samples
         });
@@ -173,7 +172,10 @@ impl MlClient {
             .await
             .map_err(|e| format!("Failed to parse ML response: {}", e))?;
 
-        Ok(body["message"].as_str().unwrap_or("Training started").to_string())
+        Ok(body["message"]
+            .as_str()
+            .unwrap_or("Training started")
+            .to_string())
     }
 
     /// Check ML service health

@@ -1,5 +1,5 @@
-use actix_web::{middleware, web, App, HttpServer};
 use actix_cors::Cors;
+use actix_web::{middleware, web, App, HttpServer};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
@@ -46,7 +46,7 @@ async fn main() -> std::io::Result<()> {
     // Initialize database connection if DATABASE_URL is provided
     let state = if let Ok(database_url) = std::env::var("DATABASE_URL") {
         tracing::info!("Connecting to database...");
-        
+
         match sqlx::postgres::PgPoolOptions::new()
             .max_connections(10)
             .acquire_timeout(Duration::from_secs(3))
@@ -55,7 +55,7 @@ async fn main() -> std::io::Result<()> {
         {
             Ok(pool) => {
                 tracing::info!("Database connected successfully");
-                
+
                 // Run migrations
                 match sqlx::migrate!("./migrations").run(&pool).await {
                     Ok(_) => {
